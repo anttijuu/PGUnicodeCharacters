@@ -1,12 +1,10 @@
 #PGUnicodeCharacters
 
-The name of this command line tool comes from the discussion in [Project Gutenberg tools](https://github.com/gutenbergtools/ebookmaker) issue. The issue (Need census of Unicode characters in PG texts #276) proposes a tool that you could use to see which Unicode characters are used in Project Gutenberg books.
-
-This tool counts the usage of unique Unicode characters from text files.
+This command line tool counts the occurrences of unique Unicode characters from text files.
 
 NB: The tool *does not* check if the file is actually in the assumed UTF-8 format, so there may be issues.
 
-Running the tool takes *very long* time (tens of minutes) when processing lots of large book files. While processing, the tool prints a dot for each file in the console, so you should be able to see some progress.
+When processing lots of and very large book files, running the tool takes *a long* time (like tens of minutes). While processing, the tool prints a dot for each file in the console, so you should be able to see some progress.
 
 ## Building
 
@@ -49,7 +47,7 @@ Time taken: 1343.1186800003052 seconds
 See results from /Users/juustila/Downloads/unicode.html
 ```
 
-And then wait for the results. As you can see, this took 1343 seconds, almost 23 minutes, on MacBook Pro M2. The result are stored in a html file, looking like this:
+And then wait for the results. As you can see, this took 1343 seconds, almost 23 minutes in handling the 62 317 book files, on MacBook Pro M2. The result are stored in a html file, looking like this:
 
 ![Screenshot of the partial html page](html-screenshot.png)
 
@@ -78,8 +76,11 @@ k	107 	163
 ```
 As you can see, the actual tab characters used in the book files is replaced with `:tab:` since the file is -- well, tab separated...
 
+## Dependencies
 
-# License
+The tool uses the Swift Argument Parser.
+
+## License
 
 * (c) Antti Juustila, 2025
 * MIT License
