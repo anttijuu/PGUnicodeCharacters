@@ -62,7 +62,7 @@ See results from /Users/juustila/Downloads/unicode.html
 
 As you can see, this took 451 seconds, to handle the 62 316 book files (on MacBook Pro M2). 
 
-The result are stored in a html file, looking like this (yes, bare & ascetic, but shows the data):
+The result are stored in a html file ([view full data from the run above](https://juustila.com/pgunicode/unicode.html)), looking like this (yes, bare & ascetic, but shows the data):
 
 ![Screenshot of the partial html page](html-screenshot.png)
 
