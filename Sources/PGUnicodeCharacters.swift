@@ -48,6 +48,7 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 			books.append("/")
 		}
 		
+		print(Date.now.formatted(date: .abbreviated, time: .complete))
 		print("Starting to process files in \(books)...")
 		
 		var codePointsUsage: [Character: Int] = [:]
@@ -81,7 +82,6 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 							codePointsUsage[key, default: 0] += value
 						}
 					}
-					
 				}
 			}
 		} catch {
@@ -89,8 +89,7 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 			return
 		}
 		print("")
-		print(Date.now.formatted(date: .complete, time: .complete))
-		print("\nHandled \(fileCounter) files.") // Print empty line after not printing line ends in progress.
+		print("Handled \(fileCounter) files.") // Print empty line after not printing line ends in progress.
 		switch order {
 		case .charsAscending:
 			print("Sorting chars in ascending order")
@@ -127,18 +126,6 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 		print("See results from \(output)")
 	}
 	
-	fileprivate
-	func uniCodeScalars(_ character: Character) -> String {
-		var string = ""
-		for (index, scalar) in character.unicodeScalars.enumerated() {
-			string += String(scalar.value)
-			if index < character.unicodeScalars.count - 1 {
-				string += " "
-			}
-		}
-		return string
-	}
-	
 	func writeHeader(to file: FileHandle, with format: Format) throws {
 		switch format {
 		case .html:
@@ -158,6 +145,18 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 		case .tsv:
 			try file.write(contentsOf: "\n".data(using: .utf8)!)
 		}
+	}
+	
+	fileprivate
+	func uniCodeScalars(_ character: Character) -> String {
+		var string = ""
+		for (index, scalar) in character.unicodeScalars.enumerated() {
+			string += String(scalar.value)
+			if index < character.unicodeScalars.count - 1 {
+				string += " "
+			}
+		}
+		return string
 	}
 	
 }
