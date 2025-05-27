@@ -1,4 +1,4 @@
-#PGUnicodeCharacters
+# PGUnicodeCharacters
 
 This command line tool counts the occurrences of unique Unicode characters from text files.
 
@@ -74,7 +74,7 @@ k	107 	163
 :tab:	9 	162
 ,	44 	154
 ```
-As you can see, the actual tab characters used in the book files is replaced with `:tab:` since the file is -- well, tab separated...
+As you can see, the actual tab characters used in the book files is replaced with `:tab:` since the file is -- well, *tab* separated...
 
 ## Dependencies
 
