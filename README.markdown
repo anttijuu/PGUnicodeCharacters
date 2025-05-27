@@ -19,7 +19,11 @@ $ swift build --configuration release
 And then run (without parameters) to see the usage instructions:
 
 ```console
-$ .build/release/PGUnicodeCharacters                                                               
+$ .build/release/PGUnicodeCharacters
+```
+
+Output:
+```                                                               
 Error: Missing expected argument '<books>'
 
 USAGE: pg-unicode-characters <books> <output> --format <format>
@@ -36,7 +40,11 @@ OPTIONS:
 An example run with real Project Gutenberg dataset:
 
 ```console
-$ .build/release/PGUnicodeCharacters ~/Downloads/cache/epub ~/Downloads/unicode.html --format html 
+$ .build/release/PGUnicodeCharacters ~/Downloads/cache/epub ~/Downloads/unicode.html --format html
+```
+
+Output:
+``` 
 Opening the html file /Users/juustila/Downloads/unicode.html for writing results...
 Starting to process files in /Users/juustila/Downloads/cache/epub/...
 .................................
