@@ -23,7 +23,7 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 	}
 	
 	@Option(help: "Output file format, either html or tsv.")
-	var format: Format = .tsv
+	var format: Format = .html
 	
 	enum Order: String, ExpressibleByArgument {
 		case charsAscending
@@ -31,7 +31,7 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 	}
 	
 	@Option(help: "Either charsAscending or countDescending; prints results by chars ascending or count descending")
-	var order: Order = .charsAscending
+	var order: Order = .countDescending
 	
 	mutating func run() async throws {
 		do {
@@ -104,7 +104,9 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 		print("Collected \(sortedByCount.count) unique codepoints")
 		print("Time taken: \(Date.now.timeIntervalSince(start)) seconds")
 		print("Opening the file \(output) for writing results...")
-		let fileHandle = try FileHandle(forWritingTo: URL(fileURLWithPath: output))
+		let fileURL = URL(fileURLWithPath: output)
+		try "".data(using: .utf8)!.write(to: fileURL)
+		let fileHandle = try FileHandle(forWritingTo: fileURL)
 		defer {
 			try! fileHandle.close()
 		}

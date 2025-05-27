@@ -2,9 +2,10 @@
 
 This command line tool counts the occurrences of unique Unicode characters from text files.
 
-NB: The tool *does not* check if the file is actually in the assumed UTF-8 format, so there may be issues.
+NB: 
 
-When processing lots of and very large book files, running the tool takes *a long* time (like tens of minutes). While processing, the tool prints a dot for each file in the console, so you should be able to see some progress.
+* The tool *does not* check if the file is actually in the assumed UTF-8 format, so there may be issues.
+* When processing lots of and very large book files, running the tool takes a long time, depending on your computer setup.
 
 ## Building
 
@@ -33,43 +34,47 @@ ARGUMENTS:
   <output>                Output file with path and file extension.
 
 OPTIONS:
-  --format <format>       Output file format, either html or tsv. (default: tsv)
-  --order <order>         Print results by char ascending or count descending (default: charsAscending)
+  --format <format>       Output file format, either html or tsv. (default: html)
+  --order <order>         Print results by char ascending or count descending (default: countDescending)
   -h, --help              Show help information.
 ```
 
-As you can see, options `--format` and `--order` have default values of `tsv` and `charsAscending`.
+As you can see, options `--format` and `--order` have default values of `html` and `countDescending`, most often used chars first.
  
-An example run with real Project Gutenberg dataset:
+An example run with real Project Gutenberg dataset, 62 316 book files:
 
 ```console
-$ .build/release/PGUnicodeCharacters ~/Downloads/cache/epub ~/Downloads/unicode.html --format html
+$ .build/release/PGUnicodeCharacters ~/Downloads/cache/epub/ ~/Downloads/unicode.html --format html
 ```
 
 Output:
 ``` 
-Opening the html file /Users/juustila/Downloads/unicode.html for writing results...
+27.5.2025 klo 20.54.47 UTC+3
 Starting to process files in /Users/juustila/Downloads/cache/epub/...
-.................................
-Handled 62317 files.
-Sorting by count of usage, descending...
+
+Handled 62316 files.
+Sorting chars in ascending order
 Collected 35628 unique codepoints
-Time taken: 1343.1186800003052 seconds
+Time taken: 451.60031509399414 seconds
+Opening the file /Users/juustila/Downloads/unicode.html for writing results...
 See results from /Users/juustila/Downloads/unicode.html
 ```
 
-And then wait for the results. As you can see, this took 1343 seconds, almost 23 minutes in handling the 62 317 book files, on MacBook Pro M2. The result are stored in a html file, looking like this:
+As you can see, this took 451 seconds, to handle the 62 316 book files (on MacBook Pro M2). 
+
+The result are stored in a html file, looking like this (yes, bare & ascetic, but shows the data):
 
 ![Screenshot of the partial html page](html-screenshot.png)
 
-Which Unicode characters you see properly, depends on the Unicode support of your environment.
+If you cannot see all the Unicode characters properly, that depends on the Unicode support of your environment.
 
-To save the data to a tsv file instead:
+To save the data to a tsv file instead (with a smaller set of test data files):
 
 ```console
 $ .build/release/PGUnicodeCharacters ~/Downloads/cache/test/ ~/Downloads/unicode.tsv --format tsv
 ```
-And the tsv file then contains the data items, tab separated:
+
+The tsv file then contains the data items, tab separated:
 
 ```
 Character	Unicode scalars	Count
@@ -85,11 +90,12 @@ k	107 	163
 :tab:	9 	162
 ,	44 	154
 ```
+
 As you can see, the actual tab characters used in the book files is replaced with `:tab:` since the output file is -- well, *tab* separated...
 
 ## Dependencies
 
-The tool uses the Swift Argument Parser and Swift System libraries.
+The tool uses the Swift Argument Parser.
 
 ## License
 
