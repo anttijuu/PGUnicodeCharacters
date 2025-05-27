@@ -82,7 +82,7 @@ k	107 	163
 :tab:	9 	162
 ,	44 	154
 ```
-As you can see, the actual tab characters used in the book files is replaced with `:tab:` since the file is -- well, *tab* separated...
+As you can see, the actual tab characters used in the book files is replaced with `:tab:` since the output file is -- well, *tab* separated...
 
 ## Dependencies
 
