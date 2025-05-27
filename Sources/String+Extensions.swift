@@ -12,7 +12,7 @@ extension String {
 				"&lt;": "<",
 				"&gt;": ">",
 				"&quot;": "\"",
-				"&apos;": "'"
+				"&#39;": "'"
 		  ]
 		  var str = self
 		  for (escaped, unescaped) in characters {
