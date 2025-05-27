@@ -6,6 +6,7 @@
 
 import ArgumentParser
 import Foundation
+import SystemPackage
 
 @available(macOS 13.0, *)
 @main
@@ -13,35 +14,54 @@ struct PGUnicodeCharacters: ParsableCommand {
 	
 	@Argument(help: "Directory where the PG books are.")
 	private var books: String
-
+	
 	@Argument(help: "Output file with path and file extension.")
 	private var output: String
-
+	
 	enum Format: String, ExpressibleByArgument {
-		 case html
-		 case tsv
+		case html
+		case tsv
 	}
 	
 	@Option(help: "Output file format, either html or tsv.")
-	var format: Format
+	var format: Format = .tsv
+	
+	enum Order: String, ExpressibleByArgument {
+		case charsAscending
+		case countDescending
+	}
+	@Option(help: "Either charsAscending or countDescending; prints results by chars ascending or count descending")
+	var order: Order = .charsAscending
 	
 	mutating func run() throws {
-		process()
+		do {
+			try process()
+		} catch {
+			print("Failed, due to: \(error.localizedDescription)")
+		}
 	}
 	
-	mutating func process() {
+	mutating func process() throws {
 		print("Opening the file \(output) for writing results...")
-		guard let outFileHandle: FileHandle = start(to: URL(filePath: output), with: format) else {
-			print("Error, could not open \(output)")
-			return
-		}
-
+				
 		let fileManager = FileManager.default
 		if !books.hasSuffix("/") {
 			books.append("/")
 		}
-
+		
 		print("Starting to process files in \(books)...")
+		
+		let path: FilePath = FilePath(output)
+		let fd = try FileDescriptor.open(
+			path,
+			.writeOnly,
+			options: [.create, .truncate],
+			permissions: .ownerReadWrite
+		)
+		defer {
+			try! fd.close()
+		}
+		try writeHeader(to: fd, with: format)
 		var codePointsUsage: [Character: Int] = [:]
 		let start = Date.now
 		var fileCounter = 1
@@ -64,26 +84,36 @@ struct PGUnicodeCharacters: ParsableCommand {
 			return
 		}
 		print("\nHandled \(fileCounter) files.") // Print empty line after not printing line ends in progress.
-		print("Sorting by count of usage, descending...")
-		let sortedByCount = codePointsUsage.sorted{ $0.value > $1.value }
+		switch order {
+		case .charsAscending:
+			print("Sorting chars in ascending order")
+		case .countDescending:
+			print("Sorting chars in descending order by count of usage")
+		}
+		let sortedByCount = if order == .charsAscending {
+			codePointsUsage.sorted{ $0.key < $1.key }
+		} else {
+			codePointsUsage.sorted{ $0.value > $1.value }
+		}
 		print("Collected \(sortedByCount.count) unique codepoints")
 		print("Time taken: \(Date.now.timeIntervalSince(start)) seconds")
 		for (key, value) in sortedByCount {
 			switch format {
 			case .html:
-				outFileHandle.write("<tr><td>\(String(key).escape())</td><td>\(uniCodeScalars(key))</td><td>\(value.formatted())</td></tr>\n".data(using: .utf8)!)
+				try fd.writeAll("<tr><td>\(String(key).escape())</td><td>\(uniCodeScalars(key))</td><td>\(value.formatted())</td></tr>\n".data(using: .utf8)!)
 			case .tsv:
 				if key == "\t" {
-					outFileHandle.write(":tab:\t\(uniCodeScalars(key))\t\(value)\n".data(using: .utf8)!)
+					try fd.writeAll(":tab:\t\(uniCodeScalars(key))\t\(value)\n".data(using: .utf8)!)
 				} else {
-					outFileHandle.write("\(key)\t\(uniCodeScalars(key))\t\(value)\n".data(using: .utf8)!)
+					try fd.writeAll("\(key)\t\(uniCodeScalars(key))\t\(value)\n".data(using: .utf8)!)
 				}
 			}
 		}
-		finish(fileHandle: outFileHandle, with: format)
+		try writeFooter(to: fd, with: format)
 		print("See results from \(output)")
 	}
-
+	
+	fileprivate
 	func uniCodeScalars(_ character: Character) -> String {
 		var string = ""
 		for scalar in character.unicodeScalars {
@@ -91,42 +121,27 @@ struct PGUnicodeCharacters: ParsableCommand {
 		}
 		return string
 	}
-
-	func start(to file: URL, with format: Format) -> FileHandle? {
-		var fileHandle: FileHandle? = nil
-		do {
-			try "".data(using: .utf8)?.write(to: file)
-			if let handle = try? FileHandle(forWritingTo: file) {
-				fileHandle = handle
-				switch format {
-				case .html:
-					fileHandle!.write("<!DOCTYPE html>\n".data(using: .utf8)!)
-					fileHandle!.write("<head><meta charset=\"utf-8\">\n".data(using: .utf8)!)
-					fileHandle!.write("<title>Unicode characters in files</title></head>\n".data(using: .utf8)!)
-					fileHandle!.write("<body><table><tr><th>Character</th><th>Unicode scalars</th><th>Count</th></tr>\n".data(using: .utf8)!)
-				case .tsv:
-					fileHandle!.write("Character\tUnicode scalars\tCount\n".data(using: .utf8)!)
-				}
-			}
-		} catch {
-			fatalError("Error in creating html file, aborting \(error)")
-		}
-		return fileHandle
-	}
-
-	func finish(fileHandle: FileHandle?, with format: Format) {
-		precondition(fileHandle != nil, "fileHandle is nil, call start() first with valid file name")
-		do {
-			switch format {
-			case .html:
-				fileHandle!.write("</table></body></html>\n".data(using: .utf8)!)
-			case .tsv:
-				fileHandle!.write("\n".data(using: .utf8)!)
-			}
-			try fileHandle!.close()
-		} catch {
-			fatalError("Error in writing html file, aborting \(error)")
+	
+	func writeHeader(to file: FileDescriptor, with format: Format) throws {
+		switch format {
+		case .html:
+			try file.writeAll("<!DOCTYPE html>\n".data(using: .utf8)!)
+			try file.writeAll("<!DOCTYPE html>\n".data(using: .utf8)!)
+			try file.writeAll("<head><meta charset=\"utf-8\">\n".data(using: .utf8)!)
+			try file.writeAll("<title>Unicode characters in files</title></head>\n".data(using: .utf8)!)
+			try file.writeAll("<body><table><tr><th>Character</th><th>Unicode scalars</th><th>Count</th></tr>\n".data(using: .utf8)!)
+		case .tsv:
+			try file.writeAll("Character\tUnicode scalars\tCount\n".data(using: .utf8)!)
 		}
 	}
-
+	
+	func writeFooter(to file: FileDescriptor, with format: Format) throws {
+		switch format {
+		case .html:
+			try file.writeAll("</table></body></html>\n".data(using: .utf8)!)
+		case .tsv:
+			try file.writeAll("\n".data(using: .utf8)!)
+		}
+	}
+	
 }

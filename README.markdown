@@ -26,16 +26,19 @@ Output:
 ```                                                               
 Error: Missing expected argument '<books>'
 
-USAGE: pg-unicode-characters <books> <output> --format <format>
+USAGE: pg-unicode-characters <books> <output> [--format <format>] [--order <order>]
 
 ARGUMENTS:
   <books>                 Directory where the PG books are.
   <output>                Output file with path and file extension.
 
 OPTIONS:
-  --format <format>       Output file format, either html or tsv.
+  --format <format>       Output file format, either html or tsv. (default: tsv)
+  --order <order>         Print results by char ascending or count descending (default: charsAscending)
   -h, --help              Show help information.
 ```
+
+As you can see, options `--format` and `--order` have default values of `tsv` and `charsAscending`.
  
 An example run with real Project Gutenberg dataset:
 
@@ -86,7 +89,7 @@ As you can see, the actual tab characters used in the book files is replaced wit
 
 ## Dependencies
 
-The tool uses the Swift Argument Parser.
+The tool uses the Swift Argument Parser and Swift System libraries.
 
 ## License
 
