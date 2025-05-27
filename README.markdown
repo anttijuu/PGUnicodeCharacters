@@ -11,7 +11,7 @@ When processing lots of and very large book files, running the tool takes *a lon
 Build using Swift package manager:
 
 ```console
-swift build --configuration relese
+$ swift build --configuration release
 ```
 
 ## Usage
