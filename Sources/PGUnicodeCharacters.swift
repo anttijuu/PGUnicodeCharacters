@@ -19,11 +19,11 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 	
 	enum Format: String, ExpressibleByArgument {
 		case html
-		case tsv
+		case text
 	}
 	
-	@Option(help: "Output file format, either html or tsv.")
-	var format: Format = .html
+	@Option(help: "Output file format, either html or text.")
+	var format: Format = .text
 	
 	enum Order: String, ExpressibleByArgument {
 		case charsAscending
@@ -53,7 +53,7 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 		
 		var codePointsUsage: [Character: Int] = [:]
 		let start = Date.now
-		var fileCounter = 0
+		var fileCount = 0
 		do {
 			
 			let booksDirectory = books
@@ -64,7 +64,7 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 					while let file = enumerator.nextObject() as? String {
 						if file.hasSuffix(".txt") {
 							// print(".", terminator: "")
-							fileCounter += 1
+							fileCount += 1
 							group.addTask { () -> [Character: Int] in
 								var taskCodePoints: [Character: Int] = [:]
 								let fullPath = booksDirectory + file
@@ -89,7 +89,7 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 			return
 		}
 		print("")
-		print("Handled \(fileCounter) files.") // Print empty line after not printing line ends in progress.
+		print("Handled \(fileCount) files.") // Print empty line after not printing line ends in progress.
 		switch order {
 		case .charsAscending:
 			print("Sorting chars in ascending order")
@@ -101,8 +101,9 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 		} else {
 			codePointsUsage.sorted{ $0.value > $1.value }
 		}
-		print("Collected \(sortedByCount.count) unique codepoints")
-		print("Time taken: \(Date.now.timeIntervalSince(start)) seconds")
+		print("Collected \(codePointsUsage.count) unique codepoints")
+		let secsTaken = Int(Date.now.timeIntervalSince(start))
+		print("Time taken: \(secsTaken) seconds")
 		print("Opening the file \(output) for writing results...")
 		let fileURL = URL(fileURLWithPath: output)
 		try "".data(using: .utf8)!.write(to: fileURL)
@@ -111,32 +112,45 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 			try! fileHandle.close()
 		}
 		try fileHandle.truncate(atOffset: 0)
-		try writeHeader(to: fileHandle, with: format)
-		for (key, value) in sortedByCount {
+		try writeHeader(to: fileHandle, with: format, statsFrom: codePointsUsage, secsTaken: secsTaken, fileCount: fileCount)
+		for (char, count) in sortedByCount {
 			switch format {
 			case .html:
-				try fileHandle.write(contentsOf: "<tr><td>\(String(key).escape())</td><td>\(uniCodeScalars(key))</td><td>\(value.formatted())</td></tr>\n".data(using: .utf8)!)
-			case .tsv:
-				if key == "\t" {
-					try fileHandle.write(contentsOf: ":tab:\t\(uniCodeScalars(key))\t\(value)\n".data(using: .utf8)!)
-				} else {
-					try fileHandle.write(contentsOf: "\(key)\t\(uniCodeScalars(key))\t\(value)\n".data(using: .utf8)!)
-				}
+				try fileHandle.write(contentsOf: "<tr><td>\(asString(char).escape().description)</td><td>\(uniCodeScalars(char))</td><td>\(count.formatted())</td></tr>\n".data(using: .utf8)!)
+			case .text:
+				try fileHandle.write(
+					contentsOf: "\(asString(char))\(uniCodeScalars(char))\(count)\n".data(using: .utf8)!
+				)
 			}
 		}
 		try writeFooter(to: fileHandle, with: format)
 		print("See results from \(output)")
 	}
 	
-	func writeHeader(to file: FileHandle, with format: Format) throws {
+	func writeHeader(
+		to file: FileHandle,
+		with format: Format,
+		statsFrom: [Character: Int],
+		secsTaken: Int,
+		fileCount: Int
+	) throws {
+		let charsInTotal = statsFrom.reduce(into: 0) { $0 += $1.value }
 		switch format {
 		case .html:
 			try file.write(contentsOf: "<!DOCTYPE html>\n".data(using: .utf8)!)
 			try file.write(contentsOf: "<head><meta charset=\"utf-8\">\n".data(using: .utf8)!)
 			try file.write(contentsOf: "<title>Unicode characters in files</title></head>\n".data(using: .utf8)!)
-			try file.write(contentsOf: "<body><table><tr><th>Character</th><th>Unicode scalars</th><th>Count</th></tr>\n".data(using: .utf8)!)
-		case .tsv:
-			try file.write(contentsOf: "Character\tUnicode scalars\tCount\n".data(using: .utf8)!)
+			try file.write(contentsOf: "<body><p>Generated \(Date.now.formatted(.iso8601)) in \(secsTaken) seconds.<br/>\n".data(using: .utf8)!)
+			try file.write(contentsOf: "\(statsFrom.count.formatted()) unique characters in dataset.<br/>\n".data(using: .utf8)!)
+			try file.write(contentsOf: "\(charsInTotal.formatted()) characters in total.<br/>\n".data(using: .utf8)!)
+			try file.write(contentsOf: "From \(fileCount.formatted()) files.<br/></p>\n".data(using: .utf8)!)
+			try file.write(contentsOf: "<table><tr><th>Character</th><th>Unicode scalars</th><th>Count</th></tr>\n".data(using: .utf8)!)
+		case .text:
+			try file.write(contentsOf: "Generated \(Date.now.formatted(.iso8601)) in \(secsTaken) seconds.\n".data(using: .utf8)!)
+			try file.write(contentsOf: "\(statsFrom.count.formatted()) unique characters in dataset.\n".data(using: .utf8)!)
+			try file.write(contentsOf: "\(charsInTotal.formatted()) characters in total.\n".data(using: .utf8)!)
+			try file.write(contentsOf: "From \(fileCount.formatted()) files.\n\n".data(using: .utf8)!)
+			try file.write(contentsOf: "Char  Unicode scalars          Count\n".data(using: .utf8)!)
 		}
 	}
 	
@@ -144,21 +158,78 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 		switch format {
 		case .html:
 			try file.write(contentsOf: "</table></body></html>\n".data(using: .utf8)!)
-		case .tsv:
+		case .text:
 			try file.write(contentsOf: "\n".data(using: .utf8)!)
 		}
 	}
 	
 	fileprivate
 	func uniCodeScalars(_ character: Character) -> String {
+		let length = 25
 		var string = ""
 		for (index, scalar) in character.unicodeScalars.enumerated() {
-			string += String(scalar.value)
+			string += asString(scalar)
 			if index < character.unicodeScalars.count - 1 {
 				string += " "
 			}
 		}
-		return string
+		return string.padding(toLength: length, withPad: " ", startingAt: 0)
+	}
+	
+	fileprivate
+	func asString(_ character: Character) -> String {
+		let length = 6
+		if !character.isWhitespace &&
+				character.isLetter ||
+				character.isNumber ||
+				character.isCurrencySymbol ||
+				character.isPunctuation ||
+				character.isSymbol ||
+				character.isMathSymbol {
+			return String(character).padding(toLength: length, withPad: " ", startingAt: 0)
+		} else if character.isWhitespace {
+			if character == "\t" {
+				return "TAB".padding(toLength: length, withPad: " ", startingAt: 0)
+			} else if character == " " {
+				return "SPACE".padding(toLength: length, withPad: " ", startingAt: 0)
+			} else if character == "\r\n" {
+				return "CRLF".padding(toLength: length, withPad: " ", startingAt: 0)
+			} else if character == "\r" {
+				return "CR".padding(toLength: length, withPad: " ", startingAt: 0)
+			} else if character == "\n" {
+				return "LF".padding(toLength: length, withPad: " ", startingAt: 0)
+			} else {
+				return "WS ".padding(toLength: length, withPad: " ", startingAt: 0)
+			}
+		} else {
+			switch character.unicodeScalars.first?.properties.generalCategory {
+			case .none:
+				return "????".padding(toLength: length, withPad: " ", startingAt: 0)
+			case .some( let caseValue ):
+				switch caseValue {
+				case .control:
+					return "CTRL".padding(toLength: length, withPad: " ", startingAt: 0)
+				case .format:
+					return "FRMT".padding(toLength: length, withPad: " ", startingAt: 0)
+				case .nonspacingMark:
+					return "NSMK".padding(toLength: length, withPad: " ", startingAt: 0)
+				default:
+					return "????".padding(toLength: length, withPad: " ", startingAt: 0)
+				}
+			}
+		}
+	}
+
+	
+	fileprivate
+	func asString(_ scalar: UnicodeScalar) -> String {
+		let value = String(scalar.value, radix: 16).uppercased()
+		let paddingCharCount = 4 - value.count
+		if paddingCharCount > 0 {
+			return "U+\(String(repeating: "0", count: paddingCharCount).appending(value))"
+		} else {
+			return "U+\(value)"
+		}
 	}
 	
 }

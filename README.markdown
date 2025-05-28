@@ -17,7 +17,7 @@ $ swift build --configuration release
 
 ## Usage
 
-And then run (without parameters) to see the usage instructions:
+And then run (without necessary parameters) to see the usage instructions:
 
 ```console
 $ .build/release/PGUnicodeCharacters
@@ -34,17 +34,17 @@ ARGUMENTS:
   <output>                Output file with path and file extension.
 
 OPTIONS:
-  --format <format>       Output file format, either html or tsv. (default: html)
+  --format <format>       Output file format, either html or text. (default: text)
   --order <order>         Print results by char ascending or count descending (default: countDescending)
   -h, --help              Show help information.
 ```
 
-As you can see, options `--format` and `--order` have default values of `html` and `countDescending`, most often used chars first.
+As you can see, options `--format` and `--order` have default values of `text` and `countDescending`, most often used chars first.
  
 An example run with real Project Gutenberg dataset, 62 316 book files:
 
 ```console
-$ .build/release/PGUnicodeCharacters ~/Downloads/cache/epub/ ~/Downloads/unicode.html --format html
+$ .build/release/PGUnicodeCharacters ~/Downloads/cache/epub/ ~/Downloads/unicode.txt --format text
 ```
 
 Output:
@@ -52,50 +52,46 @@ Output:
 27.5.2025 klo 20.54.47 UTC+3
 Starting to process files in /Users/juustila/Downloads/cache/epub/...
 
-Handled 62316 files.
+Handled 62 316 files.
 Sorting chars in ascending order
-Collected 35628 unique codepoints
-Time taken: 451.60031509399414 seconds
-Opening the file /Users/juustila/Downloads/unicode.html for writing results...
-See results from /Users/juustila/Downloads/unicode.html
+Collected 35 628 unique codepoints
+Time taken: 451 seconds
+Opening the file /Users/juustila/Downloads/unicode.txt for writing results...
+See results from /Users/juustila/Downloads/unicode.txt
 ```
 
-As you can see, this took 451 seconds, to handle the 62 316 book files (on MacBook Pro M2). 
+This took 451 seconds, to handle the 62 316 book files (on MacBook Pro M2). 
 
-The result are stored in a html file ([view full data from the run above](https://juustila.com/pgunicode/unicode.html)), looking like this (yes, bare & ascetic, but shows the data):
+The result are stored in a html file (view full [text, by count](https://juustila.com/pgunicode/unicode-by-count.txt) and [html, by char order](https://juustila.com/pgunicode/unicode-by-char.html) from the run above), looking like this (yes, bare & ascetic, but shows the data):
 
-![Screenshot of the partial html page](html-screenshot.png)
-
-If you cannot see all the Unicode characters properly, that depends on the Unicode support of your environment.
-
-To save the data to a tsv file instead (with a smaller set of test data files):
-
-```console
-$ .build/release/PGUnicodeCharacters ~/Downloads/cache/test/ ~/Downloads/unicode.tsv --format tsv
-```
-
-The tsv file then contains the data items, tab separated:
+Example from the text output file:
 
 ```
-Character	Unicode scalars	Count
- 	32 	3088
-e	101 	1732
-a	97 	1596
-t	116 	1398
-o	111 	1330
-r	114 	1243
-i	105 	1227
-n	110 	1181
-k	107 	163
-:tab:	9 	162
-,	44 	154
+Generated 28.5.2025 klo 12.01 in 450 seconds.
+35 628 unique characters in dataset.
+23 847 518 672 characters in total.
+From 62 316 files.
+
+Char  Unicode scalars          Count
+SPACE U+0020                   4019333792
+e     U+0065                   2270275893
+t     U+0074                   1529701052
+a     U+0061                   1409609619
+o     U+006F                   1304455369
+n     U+006E                   1263434718
+...
 ```
 
-As you can see, the actual tab characters used in the book files is replaced with `:tab:` since the output file is -- well, *tab* separated...
+> Note that if you download the text file and view it in macOS TeXtEdit, some lines are in right-to-left order, count of occurrences on left and the actual character on the right side, probably since that is the default reading order for that character.
 
 ## Dependencies
 
 The tool uses the Swift Argument Parser.
+
+## Contributing
+
+I am not an actual Unicode expert, so if you find something to fix, please let me know (or provide a pull request).
+
 
 ## License
 
