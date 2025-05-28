@@ -49,25 +49,25 @@ $ .build/release/PGUnicodeCharacters ~/Downloads/cache/epub/ ~/Downloads/unicode
 
 Output:
 ``` 
-27.5.2025 klo 20.54.47 UTC+3
-Starting to process files in /Users/juustila/Downloads/cache/epub/...
+28.5.2025 klo 13.17.16 UTC+3
+Starting to process files in /Users/anttijuustila/Downloads/cache/epub/...
 
-Handled 62 316 files.
-Sorting chars in ascending order
-Collected 35 628 unique codepoints
-Time taken: 451 seconds
-Opening the file /Users/juustila/Downloads/unicode.txt for writing results...
-See results from /Users/juustila/Downloads/unicode.txt
+Handled 62316 files.
+Sorting chars in descending order by count of usage
+Collected 35628 unique codepoints
+Time taken: 258 seconds
+Opening the file output.txt for writing results...
+See results from output.txt
 ```
 
-This took 451 seconds, to handle the 62 316 book files (on MacBook Pro M2). 
+This took 258 seconds, to handle the 62 316 book files (on Apple Mac Mini M1 with 16GB RAM). 
 
 The result are stored in a html file (view full [text, by count](https://juustila.com/pgunicode/unicode-by-count.txt) and [html, by char order](https://juustila.com/pgunicode/unicode-by-char.html) from the run above), looking like this (yes, bare & ascetic, but shows the data):
 
 Example from the text output file:
 
 ```
-Generated 28.5.2025 klo 12.01 in 450 seconds.
+Generated 2025-05-28T10:21:35Z in 258 seconds.
 35 628 unique characters in dataset.
 23 847 518 672 characters in total.
 From 62 316 files.
@@ -79,6 +79,9 @@ t     U+0074                   1529701052
 a     U+0061                   1409609619
 o     U+006F                   1304455369
 n     U+006E                   1263434718
+i     U+0069                   1214211647
+s     U+0073                   1109421997
+r     U+0072                   1084602235
 ...
 ```
 
