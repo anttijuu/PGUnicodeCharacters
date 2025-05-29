@@ -56,7 +56,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Users/juustila/Downloads/unicode.txt"
+            argument = "/Users/juustila/Downloads/test-unicode.txt"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument

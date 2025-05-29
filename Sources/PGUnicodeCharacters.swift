@@ -47,7 +47,16 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 		if !books.hasSuffix("/") {
 			books.append("/")
 		}
-		
+		switch format {
+		case .html:
+			if !output.hasSuffix(".html") {
+				output.append(".html")
+			}
+		case .text:
+			if !output.hasSuffix(".txt") {
+				output.append(".txt")
+			}
+		}
 		print(Date.now.formatted(date: .abbreviated, time: .complete))
 		print("Starting to process files in \(books)...")
 		
@@ -118,9 +127,11 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 			case .html:
 				try fileHandle.write(contentsOf: "<tr><td>\(asString(char).escape().description)</td><td>\(uniCodeScalars(char))</td><td>\(count.formatted())</td></tr>\n".data(using: .utf8)!)
 			case .text:
-				try fileHandle.write(
-					contentsOf: "\(asString(char))\(uniCodeScalars(char))\(count)\n".data(using: .utf8)!
-				)
+				let str = String(format: "%@ %@ %@\n", asString(char), String(count).rightJustified(width: 14), uniCodeScalars(char))
+				try fileHandle.write(contentsOf: str.data(using: .utf8)!)
+				// try fileHandle.write(contentsOf:
+					// "\(asString(char)) \(String(count).rightJustified(width: 15)) \(uniCodeScalars(char))\n".data(using: .utf8)!
+				// )
 			}
 		}
 		try writeFooter(to: fileHandle, with: format)
@@ -150,7 +161,7 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 			try file.write(contentsOf: "\(statsFrom.count.formatted()) unique characters in dataset.\n".data(using: .utf8)!)
 			try file.write(contentsOf: "\(charsInTotal.formatted()) characters in total.\n".data(using: .utf8)!)
 			try file.write(contentsOf: "From \(fileCount.formatted()) files.\n\n".data(using: .utf8)!)
-			try file.write(contentsOf: "Char  Unicode scalars          Count\n".data(using: .utf8)!)
+			try file.write(contentsOf: "Char            Count Unicode scalars\n".data(using: .utf8)!)
 		}
 	}
 	
@@ -161,19 +172,6 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 		case .text:
 			try file.write(contentsOf: "\n".data(using: .utf8)!)
 		}
-	}
-	
-	fileprivate
-	func uniCodeScalars(_ character: Character) -> String {
-		let length = 25
-		var string = ""
-		for (index, scalar) in character.unicodeScalars.enumerated() {
-			string += asString(scalar)
-			if index < character.unicodeScalars.count - 1 {
-				string += " "
-			}
-		}
-		return string.padding(toLength: length, withPad: " ", startingAt: 0)
 	}
 	
 	fileprivate
@@ -204,7 +202,7 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 		} else {
 			switch character.unicodeScalars.first?.properties.generalCategory {
 			case .none:
-				return "????".padding(toLength: length, withPad: " ", startingAt: 0)
+				return "???".padding(toLength: length, withPad: " ", startingAt: 0)
 			case .some( let caseValue ):
 				switch caseValue {
 				case .control:
@@ -214,11 +212,24 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 				case .nonspacingMark:
 					return "NSMK".padding(toLength: length, withPad: " ", startingAt: 0)
 				default:
-					return "????".padding(toLength: length, withPad: " ", startingAt: 0)
+					return "???".padding(toLength: length, withPad: " ", startingAt: 0)
 				}
 			}
 		}
 	}
+
+	fileprivate
+	func uniCodeScalars(_ character: Character) -> String {
+		var string = ""
+		for (index, scalar) in character.unicodeScalars.enumerated() {
+			string += asString(scalar)
+			if index < character.unicodeScalars.count - 1 {
+				string += " "
+			}
+		}
+		return string
+	}
+	
 
 	
 	fileprivate
@@ -226,9 +237,9 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 		let value = String(scalar.value, radix: 16).uppercased()
 		let paddingCharCount = 4 - value.count
 		if paddingCharCount > 0 {
-			return "U+\(String(repeating: "0", count: paddingCharCount).appending(value))"
+			return "U+\(String(repeating: "0", count: paddingCharCount).appending(value)) \(scalar.properties.generalCategory)"
 		} else {
-			return "U+\(value)"
+			return "U+\(value) \(scalar.properties.generalCategory)"
 		}
 	}
 	
