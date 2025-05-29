@@ -11,8 +11,8 @@ extension String {
 			"&amp;": "&",
 			"&lt;": "<",
 			"&gt;": ">",
-			"&quot;": "\"",
-			"&#39;": "'"
+			"&#34;": "\"", // &quot;
+			"&apos;": "'" // &#39;
 		]
 		var str = self
 		for (escaped, unescaped) in characters {

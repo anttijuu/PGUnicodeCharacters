@@ -56,11 +56,11 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Users/juustila/Downloads/test-unicode.txt"
+            argument = "/Users/juustila/Downloads/test-unicode"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "--format text"
+            argument = "--format html"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument

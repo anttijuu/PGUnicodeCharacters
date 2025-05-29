@@ -125,7 +125,7 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 		for (char, count) in sortedByCount {
 			switch format {
 			case .html:
-				try fileHandle.write(contentsOf: "<tr><td>\(asString(char).escape().description)</td><td>\(uniCodeScalars(char))</td><td>\(count.formatted())</td></tr>\n".data(using: .utf8)!)
+				try fileHandle.write(contentsOf: "<tr><td>\(asString(char))</td><td>\(uniCodeScalars(char))</td><td>\(count.formatted())</td></tr>\n".data(using: .utf8)!)
 			case .text:
 				let str = String(format: "%@ %@ %@\n", asString(char), String(count).rightJustified(width: 14), uniCodeScalars(char))
 				try fileHandle.write(contentsOf: str.data(using: .utf8)!)

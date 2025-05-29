@@ -44,27 +44,27 @@ As you can see, options `--format` and `--order` have default values of `text` a
 An example run with real Project Gutenberg dataset, 62 316 book files:
 
 ```console
-$ .build/release/PGUnicodeCharacters ~/Downloads/cache/epub/ ~/Downloads/unicode.txt --format text
+$ .build/release/PGUnicodeCharacters ~/Downloads/cache/epub/ ~/Downloads/unicode-by-char.html --format html --order charsAscending
 ```
 
 Output:
 ``` 
-29.5.2025 klo 11.46.27 UTC+3
+29.5.2025 klo 21.32.17 UTC+3
 Starting to process files in /Users/juustila/Downloads/cache/epub/...
 
 Handled 62316 files.
-Sorting chars in descending order by count of usage
+Sorting chars in ascending order
 Collected 35628 unique codepoints
-Time taken: 589 seconds
-Opening the file /Users/juustila/Downloads/unicode.txt for writing results...
-See results from /Users/juustila/Downloads/unicode.txt
+Time taken: 179 seconds
+Opening the file /Users/juustila/Downloads/unicode-by-char.html for writing results...
+See results from /Users/juustila/Downloads/unicode-by-char.html
 ```
 
-This took 258 seconds, to handle the 62 316 book files (on Apple Mac Mini M1 with 16GB RAM). 
+This took 179 seconds, to handle the 62 316 book files (on Apple Mac Mini M1 with 16GB RAM). 
 
-The result are stored in a html file (view full [text, by count](https://juustila.com/pgunicode/unicode-by-count.txt) and [html, by char order](https://juustila.com/pgunicode/unicode-by-char.html) from the run above), looking like this (yes, bare & ascetic, but shows the data):
+The result are stored in a file (view full [text file, by count](https://juustila.com/pgunicode/unicode-by-count.txt) and [html file, by char order](https://juustila.com/pgunicode/unicode-by-char.html) from the run above), looking like this (yes, bare & ascetic, but shows the data):
 
-Example from the text output file:
+An example, this time from the text output file:
 
 ```
 Generated 2025-05-29T08:56:16Z in 589 seconds.
@@ -97,6 +97,7 @@ m           429209133 U+006D lowercaseLetter...
 י              102417 U+05D9 otherLetter
 ו              101240 U+05D5 otherLetter
 ```
+In html output, this does not happen since layout is done by html and chars are in their own separate html element.
 
 ## Dependencies
 
