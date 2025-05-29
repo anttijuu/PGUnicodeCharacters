@@ -94,12 +94,8 @@ m           429209133 U+006D lowercaseLetter...
 > Note that if you download the text file and view it in macOS TeXtEdit, some lines are in right-to-left order, count of occurrences on left and the actual character on the right side, probably since that is the default reading order for that character. This may happen also elsewhere when viewer acknowledges the writing direction. It may also be that a character that changes the writing direction, is written to the output. It looks like this:
 
 ```
-前              102791 U+524D otherLetter
-י              102417 
-
-ו              101240 
-
-兩              100881 U+5169 otherLetter
+י              102417 U+05D9 otherLetter
+ו              101240 U+05D5 otherLetter
 ```
 
 ## Dependencies
