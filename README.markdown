@@ -49,15 +49,15 @@ $ .build/release/PGUnicodeCharacters ~/Downloads/cache/epub/ ~/Downloads/unicode
 
 Output:
 ``` 
-28.5.2025 klo 13.17.16 UTC+3
-Starting to process files in /Users/anttijuustila/Downloads/cache/epub/...
+29.5.2025 klo 11.46.27 UTC+3
+Starting to process files in /Users/juustila/Downloads/cache/epub/...
 
 Handled 62316 files.
 Sorting chars in descending order by count of usage
 Collected 35628 unique codepoints
-Time taken: 258 seconds
-Opening the file output.txt for writing results...
-See results from output.txt
+Time taken: 589 seconds
+Opening the file /Users/juustila/Downloads/unicode.txt for writing results...
+See results from /Users/juustila/Downloads/unicode.txt
 ```
 
 This took 258 seconds, to handle the 62 316 book files (on Apple Mac Mini M1 with 16GB RAM). 
@@ -67,25 +67,40 @@ The result are stored in a html file (view full [text, by count](https://juustil
 Example from the text output file:
 
 ```
-Generated 2025-05-28T10:21:35Z in 258 seconds.
+Generated 2025-05-29T08:56:16Z in 589 seconds.
 35 628 unique characters in dataset.
 23 847 518 672 characters in total.
 From 62 316 files.
 
-Char  Unicode scalars          Count
-SPACE U+0020                   4019333792
-e     U+0065                   2270275893
-t     U+0074                   1529701052
-a     U+0061                   1409609619
-o     U+006F                   1304455369
-n     U+006E                   1263434718
-i     U+0069                   1214211647
-s     U+0073                   1109421997
-r     U+0072                   1084602235
-...
+Char            Count Unicode scalars
+SPACE      4019333792 U+0020 spaceSeparator
+e          2270275893 U+0065 lowercaseLetter
+t          1529701052 U+0074 lowercaseLetter
+a          1409609619 U+0061 lowercaseLetter
+o          1304455369 U+006F lowercaseLetter
+n          1263434718 U+006E lowercaseLetter
+i          1214211647 U+0069 lowercaseLetter
+s          1109421997 U+0073 lowercaseLetter
+r          1084602235 U+0072 lowercaseLetter
+h           927948923 U+0068 lowercaseLetter
+l           734394053 U+006C lowercaseLetter
+d           720346321 U+0064 lowercaseLetter
+u           549953927 U+0075 lowercaseLetter
+CRLF        484919941 U+000D control U+000A control
+c           465452115 U+0063 lowercaseLetter
+m           429209133 U+006D lowercaseLetter...
 ```
 
-> Note that if you download the text file and view it in macOS TeXtEdit, some lines are in right-to-left order, count of occurrences on left and the actual character on the right side, probably since that is the default reading order for that character.
+> Note that if you download the text file and view it in macOS TeXtEdit, some lines are in right-to-left order, count of occurrences on left and the actual character on the right side, probably since that is the default reading order for that character. This may happen also elsewhere when viewer acknowledges the writing direction. It may also be that a character that changes the writing direction, is written to the output. It looks like this:
+
+```
+前              102791 U+524D otherLetter
+י              102417 
+
+ו              101240 
+
+兩              100881 U+5169 otherLetter
+```
 
 ## Dependencies
 
@@ -93,7 +108,7 @@ The tool uses the Swift Argument Parser.
 
 ## Contributing
 
-I am not an actual Unicode expert, so if you find something to fix, please let me know (or provide a pull request).
+I am not actually any Unicode expert, so if you find something to fix, please let me know (or provide a pull request).
 
 
 ## License
