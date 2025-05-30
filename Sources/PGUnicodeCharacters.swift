@@ -218,8 +218,10 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 				return "CR".padding(toLength: length, withPad: " ", startingAt: 0)
 			} else if character == "\n" {
 				return "LF".padding(toLength: length, withPad: " ", startingAt: 0)
+			} else if character.unicodeScalars.count > 1 {
+				return String(character).padding(toLength: length, withPad: " ", startingAt: 0)
 			} else {
-				return "WS ".padding(toLength: length, withPad: " ", startingAt: 0)
+				return "WHSP".padding(toLength: length, withPad: " ", startingAt: 0)
 			}
 		} else {
 			switch character.unicodeScalars.first?.properties.generalCategory {
@@ -231,8 +233,14 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 					return "CTRL".padding(toLength: length, withPad: " ", startingAt: 0)
 				case .format:
 					return "FRMT".padding(toLength: length, withPad: " ", startingAt: 0)
+				case .privateUse:
+					return "PRIV".padding(toLength: length, withPad: " ", startingAt: 0)
+				case .enclosingMark:
+					fallthrough
 				case .nonspacingMark:
-					return "NSMK".padding(toLength: length, withPad: " ", startingAt: 0)
+					fallthrough
+				case .spacingMark:
+					return String(character).padding(toLength: length, withPad: " ", startingAt: 0)
 				default:
 					return "???".padding(toLength: length, withPad: " ", startingAt: 0)
 				}
