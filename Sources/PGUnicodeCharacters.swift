@@ -33,6 +33,17 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 	@Option(help: "Either charsAscending or countDescending; prints results by chars ascending or count descending")
 	var order: Order = .countDescending
 	
+	enum Normalization: String, ExpressibleByArgument {
+		case none
+		case formC
+		case formD
+		case formKC
+		case formKD
+	}
+	
+	@Option(help: "String normalization options (none, formC, formD, formKC, formKD)")
+	var normalize: Normalization = .none
+	
 	mutating func run() async throws {
 		do {
 			try await process()
@@ -66,6 +77,7 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 		do {
 			
 			let booksDirectory = books
+			let selectedNormalization = normalize
 			
 			try await withThrowingTaskGroup(of: [Character: Int].self) { group in
 				
@@ -77,7 +89,19 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 							group.addTask { () -> [Character: Int] in
 								var taskCodePoints: [Character: Int] = [:]
 								let fullPath = booksDirectory + file
-								let fileContents = try String(contentsOf: URL(fileURLWithPath: fullPath), encoding: .utf8)
+								let fileContents =
+								switch selectedNormalization {
+								case .none:
+									try String(contentsOf: URL(fileURLWithPath: fullPath), encoding: .utf8)
+								case .formC:
+									try String(contentsOf: URL(fileURLWithPath: fullPath), encoding: .utf8).precomposedStringWithCanonicalMapping
+								case .formD:
+									try String(contentsOf: URL(fileURLWithPath: fullPath), encoding: .utf8).decomposedStringWithCanonicalMapping
+								case .formKC:
+									try String(contentsOf: URL(fileURLWithPath: fullPath), encoding: .utf8).precomposedStringWithCompatibilityMapping
+								case .formKD:
+									try String(contentsOf: URL(fileURLWithPath: fullPath), encoding: .utf8).decomposedStringWithCompatibilityMapping
+								}
 								for character in fileContents {
 									taskCodePoints[character, default: 0] += 1
 								}
@@ -121,7 +145,7 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 			try! fileHandle.close()
 		}
 		try fileHandle.truncate(atOffset: 0)
-		try writeHeader(to: fileHandle, with: format, statsFrom: codePointsUsage, secsTaken: secsTaken, fileCount: fileCount)
+		try writeHeader(to: fileHandle, statsFrom: codePointsUsage, secsTaken: secsTaken, fileCount: fileCount)
 		for (char, count) in sortedByCount {
 			switch format {
 			case .html:
@@ -129,9 +153,6 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 			case .text:
 				let str = String(format: "%@ %@ %@\n", asString(char), String(count).rightJustified(width: 14), uniCodeScalars(char))
 				try fileHandle.write(contentsOf: str.data(using: .utf8)!)
-				// try fileHandle.write(contentsOf:
-					// "\(asString(char)) \(String(count).rightJustified(width: 15)) \(uniCodeScalars(char))\n".data(using: .utf8)!
-				// )
 			}
 		}
 		try writeFooter(to: fileHandle, with: format)
@@ -140,7 +161,6 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 	
 	func writeHeader(
 		to file: FileHandle,
-		with format: Format,
 		statsFrom: [Character: Int],
 		secsTaken: Int,
 		fileCount: Int
@@ -154,13 +174,15 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 			try file.write(contentsOf: "<body><p>Generated \(Date.now.formatted(.iso8601)) in \(secsTaken) seconds.<br/>\n".data(using: .utf8)!)
 			try file.write(contentsOf: "\(statsFrom.count.formatted()) unique characters in dataset.<br/>\n".data(using: .utf8)!)
 			try file.write(contentsOf: "\(charsInTotal.formatted()) characters in total.<br/>\n".data(using: .utf8)!)
-			try file.write(contentsOf: "From \(fileCount.formatted()) files.<br/></p>\n".data(using: .utf8)!)
+			try file.write(contentsOf: "From \(fileCount.formatted()) files.<br/>\n".data(using: .utf8)!)
+			try file.write(contentsOf: "Unicode normalization used: \(normalize)<br/></p>\n".data(using: .utf8)!)
 			try file.write(contentsOf: "<table><tr><th>Character</th><th>Unicode scalars</th><th>Count</th></tr>\n".data(using: .utf8)!)
 		case .text:
 			try file.write(contentsOf: "Generated \(Date.now.formatted(.iso8601)) in \(secsTaken) seconds.\n".data(using: .utf8)!)
 			try file.write(contentsOf: "\(statsFrom.count.formatted()) unique characters in dataset.\n".data(using: .utf8)!)
 			try file.write(contentsOf: "\(charsInTotal.formatted()) characters in total.\n".data(using: .utf8)!)
-			try file.write(contentsOf: "From \(fileCount.formatted()) files.\n\n".data(using: .utf8)!)
+			try file.write(contentsOf: "From \(fileCount.formatted()) files.\n".data(using: .utf8)!)
+			try file.write(contentsOf: "Unicode normalization used: \(normalize)\n\n".data(using: .utf8)!)
 			try file.write(contentsOf: "Char            Count Unicode scalars\n".data(using: .utf8)!)
 		}
 	}
@@ -217,7 +239,7 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 			}
 		}
 	}
-
+	
 	fileprivate
 	func uniCodeScalars(_ character: Character) -> String {
 		var string = ""
@@ -230,17 +252,12 @@ struct PGUnicodeCharacters: AsyncParsableCommand {
 		return string
 	}
 	
-
+	
 	
 	fileprivate
 	func asString(_ scalar: UnicodeScalar) -> String {
-		let value = String(scalar.value, radix: 16).uppercased()
-		let paddingCharCount = 4 - value.count
-		if paddingCharCount > 0 {
-			return "U+\(String(repeating: "0", count: paddingCharCount).appending(value)) \(scalar.properties.generalCategory)"
-		} else {
-			return "U+\(value) \(scalar.properties.generalCategory)"
-		}
+		let value = String(scalar.value, radix: 16).uppercased().rightJustified(width: 4, fillChar: "0", truncate: false)
+		return "U+\(value) \(scalar.properties.generalCategory)"
 	}
 	
 }

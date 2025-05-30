@@ -2,10 +2,10 @@
 
 This command line tool counts the occurrences of unique Unicode characters from text files.
 
-NB: 
+NB:
 
-* The tool *does not* check if the file is actually in the assumed UTF-8 format, so there may be issues.
-* When processing lots of and very large book files, running the tool takes a long time, depending on your computer setup.
+* The tool *does not* check if the input text files are actually in the assumed UTF-8 format, so there may be issues.
+* When processing lots of and very large files, running the tool takes a long time, depending on your computer setup.
 
 ## Building
 
@@ -27,7 +27,7 @@ Output:
 ```                                                               
 Error: Missing expected argument '<books>'
 
-USAGE: pg-unicode-characters <books> <output> [--format <format>] [--order <order>]
+USAGE: pg-unicode-characters <books> <output> [--format <format>] [--order <order>] [--normalize <normalize>]
 
 ARGUMENTS:
   <books>                 Directory where the PG books are.
@@ -35,11 +35,18 @@ ARGUMENTS:
 
 OPTIONS:
   --format <format>       Output file format, either html or text. (default: text)
-  --order <order>         Print results by char ascending or count descending (default: countDescending)
+  --order <order>         Either charsAscending or countDescending; prints results by chars ascending or count descending (default: countDescending)
+  --normalize <normalize> String normalization options (none, formC, formD, formKC, formKD) (default: none)
   -h, --help              Show help information.
 ```
 
-As you can see, options `--format` and `--order` have default values of `text` and `countDescending`, most often used chars first.
+Both arguments must be given. If the output file extension is not included in the `output` argument, either `.txt` or `.html` is added by the tool, depending on the `--format` option value.
+
+Options have default values, so if you give no options, the defaults are used. Options are:
+
+* output format for the results, either html or plain text file.
+* order of the output, results are sorted either in (ascending) character order, or descending count of occurrence order.
+* [Unicode normalization](https://en.wikipedia.org/wiki/Unicode_equivalence#Normalization) done to the input string files. Note that selecting other than `none` slows down the processing considerably.
  
 An example run with real Project Gutenberg dataset, 62 316 book files:
 
@@ -71,6 +78,7 @@ Generated 2025-05-29T08:56:16Z in 589 seconds.
 35 628 unique characters in dataset.
 23 847 518 672 characters in total.
 From 62 316 files.
+Unicode normalization used: none
 
 Char            Count Unicode scalars
 SPACE      4019333792 U+0020 spaceSeparator
@@ -91,13 +99,13 @@ c           465452115 U+0063 lowercaseLetter
 m           429209133 U+006D lowercaseLetter...
 ```
 
-> Note that if you download the text file and view it in macOS TeXtEdit, some lines are in right-to-left order, count of occurrences on left and the actual character on the right side, probably since that is the default reading order for that character. This may happen also elsewhere when viewer acknowledges the writing direction. It may also be that a character that changes the writing direction, is written to the output. It looks like this:
+> Note that when you view the output text file, depending on what you view it with, some lines are in right-to-left order, count of occurrences on left and the actual character on the right side, probably since that is the default order for that character (right to left instead of left to right). It may also be that a character that changes the writing direction, is written to the output. It looks like this (see the actual tiny characters on the right side, when it should be on the left side of the row):
 
 ```
 י              102417 U+05D9 otherLetter
 ו              101240 U+05D5 otherLetter
 ```
-In html output, this does not happen since layout is done by html and chars are in their own separate html element.
+In html output, this does not happen since layout is done in html and chars are in their own separate html element.
 
 ## Dependencies
 
@@ -105,7 +113,7 @@ The tool uses the Swift Argument Parser.
 
 ## Contributing
 
-I am not actually any Unicode expert, so if you find something to fix, please let me know (or provide a pull request).
+I am not actually an Unicode expert, so if you find something to fix, please let me know (or provide a pull request).
 
 
 ## License

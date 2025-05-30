@@ -6,20 +6,6 @@
 //
 
 extension String {
-	func escape() -> String {
-		let characters = [
-			"&amp;": "&",
-			"&lt;": "<",
-			"&gt;": ">",
-			"&#34;": "\"", // &quot;
-			"&apos;": "'" // &#39;
-		]
-		var str = self
-		for (escaped, unescaped) in characters {
-			str = str.replacingOccurrences(of: unescaped, with: escaped)
-		}
-		return str
-	}
 	
 	// Modified from https://stackoverflow.com/a/52016010/10557366
 	func rightJustified(width: Int, fillChar: String = " ", truncate: Bool = false) -> String {

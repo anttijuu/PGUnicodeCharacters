@@ -60,7 +60,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "--format html"
+            argument = "--format text"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
